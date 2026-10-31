@@ -60,6 +60,47 @@ public class Grafo {
     }
 
     // =========================================================
+    //  ACTUALIZAR (Update)
+    // =========================================================
+
+    /**
+     * Cambia el peso de una arista que ya existe.
+     * @return true si se actualizó, false si la arista no existe o el peso es negativo.
+     */
+    public boolean actualizarPeso(String origen, String destino, int nuevoPeso) {
+        if (nuevoPeso < 0 || !existeArista(origen, destino)) {
+            return false;
+        }
+        adyacencia.get(origen).put(destino, nuevoPeso);
+        return true;
+    }
+
+    /**
+     * Cambia el nombre de un vértice conservando todas sus aristas
+     * (las que salen de él y las que llegan a él).
+     * @return true si se renombró, false si no existe o el nuevo nombre ya está en uso.
+     */
+    public boolean renombrarVertice(String actual, String nuevo) {
+        if (!existeVertice(actual) || nuevo == null || nuevo.isBlank() || existeVertice(nuevo)) {
+            return false;
+        }
+        // Se reconstruye el mapa para conservar el orden original de los vértices
+        Map<String, Map<String, Integer>> copia = new LinkedHashMap<>();
+        for (Map.Entry<String, Map<String, Integer>> fila : adyacencia.entrySet()) {
+            String clave = fila.getKey().equals(actual) ? nuevo : fila.getKey();
+            Map<String, Integer> vecinos = new LinkedHashMap<>();
+            for (Map.Entry<String, Integer> v : fila.getValue().entrySet()) {
+                String destino = v.getKey().equals(actual) ? nuevo : v.getKey();
+                vecinos.put(destino, v.getValue());
+            }
+            copia.put(clave, vecinos);
+        }
+        adyacencia.clear();
+        adyacencia.putAll(copia);
+        return true;
+    }
+
+    // =========================================================
     //  CONSULTAS BÁSICAS
     // =========================================================
 
