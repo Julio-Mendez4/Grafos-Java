@@ -101,6 +101,39 @@ public class Grafo {
     }
 
     // =========================================================
+    //  BORRAR (Delete)
+    // =========================================================
+
+    /**
+     * Elimina la arista dirigida origen -> destino.
+     * @return true si se eliminó, false si no existía.
+     */
+    public boolean eliminarArista(String origen, String destino) {
+        if (!existeArista(origen, destino)) {
+            return false;
+        }
+        adyacencia.get(origen).remove(destino);
+        return true;
+    }
+
+    /**
+     * Elimina un vértice y TODAS sus aristas:
+     *  1) las que salen de él (se borran junto con su lista), y
+     *  2) las que llegan a él desde otros vértices (hay que buscarlas).
+     * @return true si se eliminó, false si no existía.
+     */
+    public boolean eliminarVertice(String vertice) {
+        if (!existeVertice(vertice)) {
+            return false;
+        }
+        adyacencia.remove(vertice);                      // 1) aristas de salida
+        for (Map<String, Integer> vecinos : adyacencia.values()) {
+            vecinos.remove(vertice);                     // 2) aristas de entrada
+        }
+        return true;
+    }
+
+    // =========================================================
     //  CONSULTAS BÁSICAS
     // =========================================================
 
