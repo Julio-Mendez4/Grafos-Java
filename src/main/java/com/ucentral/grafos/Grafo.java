@@ -1,7 +1,11 @@
 package com.ucentral.grafos;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * Grafo dirigido y ponderado implementado con LISTA DE ADYACENCIA.
@@ -153,6 +157,77 @@ public class Grafo {
     }
 
     // =========================================================
+    //  CONSULTAS (Read)
+    // =========================================================
+
+    /** Número total de aristas del grafo. */
+    public int numAristas() {
+        int total = 0;
+        for (Map<String, Integer> vecinos : adyacencia.values()) {
+            total += vecinos.size();
+        }
+        return total;
+    }
+
+    /** Peso de la arista origen -> destino, o null si no existe. */
+    public Integer obtenerPeso(String origen, String destino) {
+        return existeArista(origen, destino) ? adyacencia.get(origen).get(destino) : null;
+    }
+
+    /** Vecinos de salida de un vértice (lista vacía si no existe). */
+    public List<String> vecinos(String vertice) {
+        if (!existeVertice(vertice)) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(adyacencia.get(vertice).keySet());
+    }
+
+    /** Grado de salida d+(v): cuántas aristas SALEN del vértice. */
+    public int gradoSalida(String vertice) {
+        return existeVertice(vertice) ? adyacencia.get(vertice).size() : 0;
+    }
+
+    /** Grado de entrada d-(v): cuántas aristas LLEGAN al vértice. */
+    public int gradoEntrada(String vertice) {
+        int grado = 0;
+        for (Map<String, Integer> vecinos : adyacencia.values()) {
+            if (vecinos.containsKey(vertice)) {
+                grado++;
+            }
+        }
+        return grado;
+    }
+
+    /** Grado total = grado de entrada + grado de salida. */
+    public int gradoTotal(String vertice) {
+        return gradoEntrada(vertice) + gradoSalida(vertice);
+    }
+
+    /**
+     * Recorrido en anchura (BFS) desde un vértice: visita primero los
+     * vecinos directos, luego los vecinos de los vecinos, y así sucesivamente.
+     */
+    public List<String> recorridoAnchura(String inicio) {
+        List<String> visitados = new ArrayList<>();
+        if (!existeVertice(inicio)) {
+            return visitados;
+        }
+        Queue<String> cola = new LinkedList<>();
+        cola.add(inicio);
+        visitados.add(inicio);
+        while (!cola.isEmpty()) {
+            String actual = cola.poll();
+            for (String vecino : adyacencia.get(actual).keySet()) {
+                if (!visitados.contains(vecino)) {
+                    visitados.add(vecino);
+                    cola.add(vecino);
+                }
+            }
+        }
+        return visitados;
+    }
+
+    // =========================================================
     //  MOSTRAR
     // =========================================================
 
@@ -177,5 +252,47 @@ public class Grafo {
             }
             System.out.println(linea);
         }
+    }
+
+    /**
+     * Imprime la matriz de costos. La fila es el origen y la columna el destino.
+     * El símbolo ∞ indica que no hay arista directa.
+     */
+    public void mostrarMatriz() {
+        if (adyacencia.isEmpty()) {
+            System.out.println("  (el grafo está vacío)");
+            return;
+        }
+        List<String> vertices = new ArrayList<>(adyacencia.keySet());
+        int ancho = 6;
+        for (String v : vertices) {
+            ancho = Math.max(ancho, v.length() + 2);
+        }
+        String formato = "%-" + ancho + "s";
+
+        StringBuilder encabezado = new StringBuilder("  " + String.format(formato, ""));
+        for (String v : vertices) {
+            encabezado.append(String.format(formato, v));
+        }
+        System.out.println(encabezado);
+
+        for (String origen : vertices) {
+            StringBuilder fila = new StringBuilder("  " + String.format(formato, origen));
+            for (String destino : vertices) {
+                Integer peso = obtenerPeso(origen, destino);
+                fila.append(String.format(formato, peso == null ? "∞" : peso.toString()));
+            }
+            System.out.println(fila);
+        }
+    }
+
+    /** Imprime la tabla de grados de entrada, salida y total de cada vértice. */
+    public void mostrarGrados() {
+        System.out.printf("  %-12s %-9s %-8s %-6s%n", "Vértice", "Entrada", "Salida", "Total");
+        for (String v : adyacencia.keySet()) {
+            System.out.printf("  %-12s %-9d %-8d %-6d%n",
+                    v, gradoEntrada(v), gradoSalida(v), gradoTotal(v));
+        }
+        System.out.println("  Total de aristas: " + numAristas());
     }
 }
